@@ -1,56 +1,67 @@
-#Introduction
+# Introduction
 
 This project focuses on utilizing deep learning techniques to enhance low-light images, improving their clarity and usability. The project involves training a model using a dataset of low-light and high-light images, evaluating its performance using metrics such as PSNR (Peak Signal-to-Noise Ratio), and deploying the model for inference. The following report details the steps taken, the methodology employed.
-Mounting the drive containing dataset
+
+# Mounting the drive containing dataset
 The initial step in our project involves importing the dataset, which is stored on Google Drive. We need to mount the Google Drive to access the dataset files.
-Importing Necessary Libraries
+
+# Importing Necessary Libraries
 •	os, random, numpy: For file handling, randomization, and numerical operations.
 •	glob: To retrieve files matching specified patterns.
 •	PIL (Python Imaging Library), ImageOps: For image manipulation.
 •	matplotlib.pyplot: For plotting images.
 •	cv2 (OpenCV): For image processing tasks.
 •	tensorflow, keras, layers: For building and training neural network models.
-Image Preprocessing Function
+
+# Image Preprocessing Function
 This function is responsible for loading and preprocessing images.
-•	tf.io.read_file(image_path): This function reads the image file from the specified path as a byte string.
-•	tf.image.decode_png(image, channels=3): Decodes the byte string to a PNG image tensor. The “channels=3” argument ensures the image is loaded with RGB.
-•	tf.image.resize(images=image, size=[256, 256]): Resizes the image to 256x256 pixels, a standard size for input into neural networks.
-•	image / 255.0: Normalizes the pixel values of the image to the range [0, 1].
-Data Pipeline Creation Function
+
+# Data Pipeline Creation Function
 This function efficiently loads, preprocess, and batch the images for training or inference.
-•	tf.data.Dataset.from_tensor_slices(low_light_images): This function creates a “tf.data.Dataset” from the list of image paths for low_light images.
-•	dataset.map(preprocess_image, num_parallel_calls=tf.data.AUTOTUNE): The map function applies the “preprocess_image” function to each element in the dataset. The “num_parallel_calls=tf.data.AUTOTUNE” argument enables parallel processing, optimizing the pipeline's performance by utilizing multiple CPU cores.
-•	dataset.batch(16, drop_remainder=True): Batches the dataset into groups of 16 images.
-Dataset Preparation
-•  Image Path Retrieval: We will take first 30 images for testing our results, from 31 to 400 images for training and from 400 onwards for validation.
-•  Dataset Creation:
+
+# Dataset Preparation
+## Image Path Retrieval:
+We will take first 30 images for testing our results, from 31 to 400 images for training and from 400 onwards for validation.
+## Dataset Creation:
 •	create_dataset(train_low_light_images): Preprocesses and batches training images.
 •	create_dataset(val_low_light_images): Preprocesses and batches validation images.
-•  Print Dataset Details: Outputs information about the datasets to confirm correct loading and preprocessing.
-Building the Deep Curve Estimation (DCE) Network
+
+## Print Dataset Details:
+Outputs information about the datasets to confirm correct loading and preprocessing.
+
+# Building the Deep Curve Estimation (DCE) Network
 This function “build_image_enhancement_net()” defines a Deep Curve Estimation network architecture using the Keras API from TensorFlow.
-•	Input Layer: Defines the “input_image” variable for the network with “shape [None, None, 3]”.
-•	Convolutional Layers: Sequentially defines several convolutional layers (conv_layer1 to conv_layer4). Each layer uses a 3x3 kernel, “relu” activation function, and same padding to ensure that the output has the same spatial dimensions as the input.
-•	Intermediate Concatenation Layers: Concatenates the output of one with another along the last axis (-1), corresponding to the channel axis.
-•	Output Layer: Final convolutional layer with 24 filters, 3x3 kernel size, tanh activation function, and same padding.
-•	Model Compilation: Returns a Keras Model object initialized with the input and output layers. This model defines the complete architecture of the DCE network.
-Function to Calculate Color Constancy Loss
-•	Calculate Mean RGB Values: Computes the mean red (mean_r), green (mean_g), and blue (mean_b) values across the image batch using tf.reduce_mean.
-•	Calculate Squared Differences: Computes d_rg, d_rb, and d_gb as squared differences between mean RGB values.
-•	Calculate Color Constancy Loss: Computes the color constancy loss as sqrt(d_rg^2 + d_rb^2 + d_gb^2), aiming to maintain color consistency across images.
-Function to Calculate Exposure Loss
-•	Calculate Mean Intensity: Computes the mean intensity of the input image_tensor across the RGB channels using tf.reduce_mean.
-•	Average Pooling: Performs average pooling on mean_intensity to compute the overall mean with a kernel size (ksize) of 16x16 and strides (strides) of 16.
-•	Calculate Exposure Loss: Computes the exposure loss as the mean squared difference between pooled_mean and target_mean. This loss helps in adjusting the exposure of the images.
-Function to Calculate Illumination Smoothness Loss
-•	Batch Size and Image Dimensions: Retrieves the batch size (batch_size), height (h_x), and width (w_x) of the image_tensor.
-•	Number of Horizontal and Vertical Pairwise Differences: Computes count_h and count_w as the total number of horizontal and vertical pairwise differences respectively.
-•	Calculate Horizontal and Vertical Total Variation (TV): Computes h_tv and w_tv as the sum of squared differences between horizontally and vetically adjacent pixels across all channels in each image of the batch respectively.
-•	Convert Counts to Float32: Converts batch_size, count_h, and count_w to float32 for division to ensure compatibility with TensorFlow operations.
-•	Calculate Illumination Smoothness Loss:
- 
-•	This loss measures how smoothly illumination changes across adjacent pixels in the image tensor, promoting spatial consistency in illumination.
-Spatial Consistency Loss Class
+
+# Function to Calculate Color Constancy Loss
+## Calculate Mean RGB Values: 
+Computes the mean red (mean_r), green (mean_g), and blue (mean_b) values across the image batch using tf.reduce_mean.
+## Calculate Squared Differences: 
+Computes d_rg, d_rb, and d_gb as squared differences between mean RGB values.
+## Calculate Color Constancy Loss: 
+Computes the color constancy loss as sqrt(d_rg^2 + d_rb^2 + d_gb^2), aiming to maintain color consistency across images.
+
+# Function to Calculate Exposure Loss
+## Calculate Mean Intensity: 
+Computes the mean intensity of the input image_tensor across the RGB channels using tf.reduce_mean.
+## Average Pooling: 
+Performs average pooling on mean_intensity to compute the overall mean with a kernel size (ksize) of 16x16 and strides (strides) of 16.
+## Calculate Exposure Loss: 
+Computes the exposure loss as the mean squared difference between pooled_mean and target_mean. This loss helps in adjusting the exposure of the images.
+
+# Function to Calculate Illumination Smoothness Loss
+## Batch Size and Image Dimensions: 
+Retrieves the batch size (batch_size), height (h_x), and width (w_x) of the image_tensor.
+## Number of Horizontal and Vertical Pairwise Differences: 
+Computes count_h and count_w as the total number of horizontal and vertical pairwise differences respectively.
+## Calculate Horizontal and Vertical Total Variation (TV): 
+Computes h_tv and w_tv as the sum of squared differences between horizontally and vetically adjacent pixels across all channels in each image of the batch respectively.
+## Convert Counts to Float32: 
+Converts batch_size, count_h, and count_w to float32 for division to ensure compatibility with TensorFlow operations.
+
+# Calculate Illumination Smoothness Loss:
+This loss measures how smoothly illumination changes across adjacent pixels in the image tensor, promoting spatial consistency in illumination.
+
+# Spatial Consistency Loss Class
 •	Constructor (__init__ method):
 •	Initializes the class as a subclass of keras.losses.Loss with reduction="none", indicating that the loss will be computed per batch sample without reducing across the batch.
 •	Defines four convolutional kernels (left_kernel, right_kernel, up_kernel, down_kernel) using TensorFlow constants (tf.constant). These kernels are used to compute differences in the spatial consistency of illumination between the original (y_true) and enhanced (y_pred) images.
