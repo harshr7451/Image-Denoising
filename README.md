@@ -1,4 +1,4 @@
-Introduction
+#Introduction
 This project focuses on utilizing deep learning techniques to enhance low-light images, improving their clarity and usability. The project involves training a model using a dataset of low-light and high-light images, evaluating its performance using metrics such as PSNR (Peak Signal-to-Noise Ratio), and deploying the model for inference. The following report details the steps taken, the methodology employed.
 Mounting the drive containing dataset
 The initial step in our project involves importing the dataset, which is stored on Google Drive. We need to mount the Google Drive to access the dataset files.
